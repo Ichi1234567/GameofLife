@@ -84,7 +84,7 @@ define([
 
                 (_measure_num > base_measure && (
                     _measure_num = _Math.round(_Math.random() * (_dying - 2) + 1)
-                    @type = "ghost"
+                    #@type = "ghost"
                     @ghost = _measure_num
                 ))
             @
