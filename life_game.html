@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title>strftime</title>
+    <link href="css/axis.css" rel="stylesheet" type="text/css">
+    <link href="css/common.css" rel="stylesheet" type="text/css">
+    
+
+  </head>
+  <body>
+
+    S/B/G：<select id='mode'>
+        <option value="amoeba"> 1358/357 </option>
+        <option value="assimilation"> 4567/345/ </option>
+        <option value="coagulations"> 235678/378/ </option>
+        <option value="conway"> 23/3/ </option>
+        <option value="coral">45678/3/</option>
+        <option value="dayNnight">34678/3678/</option>
+        <!--option value="diamoeba">5678/35678/</option-->
+        <option value="flakes"> 012345678/3/ </option>
+        <option value="gnarl">1/1/</option>
+        <option value="highlife">23/36/</option>
+        <option value="longlife">5/345/</option>
+        <option value="logic"> /2/ </option>
+        <option value="maze"> 12345/3/ </option>
+        <option value="mazectric">1234/3/</option>
+        <!--option value="move">245/368/</option-->
+        <option value="pseudo_life">238/357/</option>
+        <option value="replicator"> 1357/1357/ </option>
+        <option value="serviettes">/234/</option>
+        <option value="stains">235678/3678/</option>
+        <option value="twoxtwo"> 125/36/ </option>
+        <option value="threefour">34/34/</option>
+        <option value="walledcities">2345/45678/</option>
+
+
+        <option value="brainbrain"> /2/3</option>
+        <option value="banners"> 2367/3457/5 </option>
+        <option value="ebbflow"> 012478/36/16 </option>
+        <!--option value="fireworks"> 2/13/19 </option-->
+        <!--option value="rake"> 3467/2678/4 </option-->
+        <option value="spirals"> 2/234/3 </option>
+        <!--option value="star_wars"> 345/2/4 </option-->
+        <option value="soft_freeze"> 13458/38/6 </option>
+        <!--option value="frozen_spirals"> 356/23/6 </option-->
+        <option value="belzhab"> 23/23/8  </option>
+        <option value="flaming_starbow"> 347/23/6  </option>
+    </select><br>
+    <input type="checkbox" id="rnd_ghost" />加入隨機鬼魂狀態
+    <input type="checkbox" id="auto-reset" />auto reset
+    <input type="checkbox" id="chk-delay" />delay (on/off)
+    <br/>
+
+    <!--button id="clear">clear</button-->
+    <button id="reset">reset</button>
+    <!--button id="start">start</button>
+    <button id="pause">pause</button-->
+    <button id="next">next</button>
+    <button id="auto-run">auto run</button>
+    <!--button id="stop">stop</button>
+    <button id="add">add cell</button>
+    <button id="del">del cell</button-->
+    <br/>
+    <div>fps：<span id="fps"></span></div>
+    <div id="plant" class="plant"></div>
+    <div class="plant" style="visibility: hidden; position: relative;"></div>
+
+
+
+    <script src="http://d3js.org/d3.v2.min.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script type="text/javascript" src="http://documentcloud.github.com/underscore/underscore-min.js"></script>
+    <script type="text/javascript" src="http://documentcloud.github.com/backbone/backbone-min.js"></script>
+    <script type="text/javascript" src="javascript/vender/mustache.js"></script>
+
+    <script>
+    var require = {"baseUrl":'javascript'}
+    </script>
+    <script data-main="main-lg" src="http://requirejs.org/docs/release/2.0.4/minified/require.js"></script>
+  </body>
+</html>
+

@@ -1,0 +1,98 @@
+.line {
+  fill: none;
+  stroke: black;
+  stroke-width: 1.5px; }
+
+.line1 {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px; }
+
+.line2 {
+  fill: none;
+  stroke: red;
+  stroke-width: 1.5px; }
+
+.dot1 {
+  fill: white;
+  stroke: steelblue;
+  stroke-width: 1.5px; }
+
+.dot2 {
+  fill: white;
+  stroke: red;
+  stroke-width: 1.5px; }
+
+.box {
+  fill: none;
+  stroke: black;
+  stroke-width: 1.5px; }
+
+.role {
+  fill: steelblue; }
+
+.empty {
+  fill: white; }
+
+.ghost0 {
+  fill: #000000; }
+
+.ghost1 {
+  fill: #250038; }
+
+.ghost2 {
+  fill: #360052; }
+
+.ghost3 {
+  fill: #49006E; }
+
+.ghost4 {
+  fill: #5A0087; }
+
+.ghost5 {
+  fill: #68009C; }
+
+.ghost6 {
+  fill: #7400AD; }
+
+.ghost7 {
+  fill: #8B00D1; }
+
+.ghost8 {
+  fill: #A113E8; }
+
+.ghost9 {
+  fill: #B423FC; }
+
+.ghost10 {
+  fill: #BC36FF; }
+
+.ghost11 {
+  fill: #C145FF; }
+
+.ghost12 {
+  fill: #CA61FF; }
+
+.ghost13 {
+  fill: #CF70FF; }
+
+.ghost14 {
+  fill: #D685FF; }
+
+.ghost15 {
+  fill: #DC96FF; }
+
+.ghost16 {
+  fill: #E2A8FF; }
+
+.ghost17 {
+  fill: #E6B5FF; }
+
+.ghost18 {
+  fill: #EBC2FF; }
+
+.ghost19 {
+  fill: #F1D6FF; }
+
+.ghost20 {
+  fill: #F8EBFF; }
