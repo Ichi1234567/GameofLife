@@ -226,13 +226,15 @@ define([
             @saveWorker.postMessage(_cells)
             $(".plant").each((idx, elm) ->
                 _chk = idx - _current
-                ((init || _chk) && $(elm).html("").showCanvas({
+                $elm = $(elm)
+                $(elm).html("").showCanvas({
                     w: _w,
                     h: _h,
                     num: _size
                     data: _cells
-                }).css("visibility", "visible"))
-                ((!_chk) && $(elm).css("visibility", "hidden"))
+                })
+                ($elm.css("visibility") == "visible" && $elm.css("hidden"))
+                ($elm.css("visibility") != "visible" && $elm.css("visible"))
                 true
             )
             @current = (_current + 1) % 2
@@ -247,43 +249,10 @@ define([
             _stable = true
             mode = $("#mode option:selected").val()
             _chk_delay = !!$("#chk-delay").attr("checked")
-
-            cells_update = (total_cells, thisCell, state, mode, opts) ->
-                position = thisCell.position
-                c_size = opts.c_size
-                this_row = _Math.floor(position / c_size)
-                delta = [
-                    1,
-                    -1,
-                    -c_size,
-                    (-c_size + 1),
-                    (-c_size - 1),
-                    c_size,
-                    (c_size + 1),
-                    (c_size - 1)
-                ]
-                chk_row = [0, -1, 1]
-                result = { stable: true }
-                up_cells = [thisCell]
-                delta.forEach((delta_i, idx)->
-                    nei_pos = position + delta_i
-                    row = _Math.floor(nei_pos / c_size)
-                    if (!(row - this_row - chk_row[_Math.floor((idx + 1) / 3)]))
-                        cell_nei = total_cells[nei_pos]
-                        (cell_nei && !cell_nei.visited && up_cells.push(cell_nei))
-                )
-                #console.log(up_cells)
-
-                up_cells.forEach((cell) ->
-                    position = cell.position
-                    tmp = cell.move(state, total_cells, mode, opts)
-                    total_cells = tmp.cells
-                    (!tmp.stable && (result.stable = false))
-                    total_cells[position].visited = true
-                )
-                result.cells = total_cells
-                result
             c_size = @size
+            canvas = $("canvas").eq(_current).get(0)
+            ctx = canvas.getContext("2d")
+            g_num = [@w / c_size, @h / c_size]
             _args = {
                 EMPTY: BASIC,
                 ROLE: ROLE,
@@ -291,15 +260,17 @@ define([
                 ENEMY: ENEMY,
                 delay: _chk_delay,
                 c_size: c_size
+                ctx: ctx
+                g_num: g_num
             }
 
             i = -1
             while (++i < _num)
                 cell_i = _cells[i]
-                if (!cell_i.visited && cell_i.type != "empty")
-                    result = cells_update(_cells, cell_i, _state, mode, _args)
-                    (!result.stable && (_stable = false))
-                    _cells = result.cells
+                result = cell_i.move(_state, _cells, mode, _args)
+                (!result.stable && (_stable = false))
+                _cells = result.cells
+                
             @cells = _cells
             _w = @w
             _h = @h
@@ -307,9 +278,13 @@ define([
             _state = @state
             if (!_stable)
                 $(".plant").each((idx, elm) ->
-                    _chk = idx - _current
-                    ((_chk) && $(elm).upCanvas(_cells, {num: c_size}).css("visibility", "visible"))
-                    ((!_chk) && $(elm).css("visibility", "hidden"))
+                    $elm = $(elm)
+                    ($elm.css("visibility") == "visible" && (
+                        $elm.css("visibility", "hidden")
+                    ))
+                    ($elm.css("visibility") != "visible" && (
+                        $elm.upCanvas(_cells, {num: c_size}).css("visibility", "visible")
+                    ))
                     true
                 )
             @current = (_current + 1) % 2
@@ -320,7 +295,7 @@ define([
                 global_count = 0
                 prev_status = null
 
-            ((global_count == 10) && (
+            ((global_count == 20) && (
                 global_count = 0
                 prev_status = null
                 _is_auto_reset = !!$("#auto-reset").attr("checked")

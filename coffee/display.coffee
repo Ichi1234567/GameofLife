@@ -13,11 +13,18 @@ define([
         num = params.num
         g_num = [w / num, h / num]
         data = params.data
+        _init = params.init
 
         #console.log(data)
-        canvas = _Doc.createElement("canvas")
-        canvas.width = w
-        canvas.height = h
+        canvas = $(@).find("canvas")
+        if (!canvas.length)
+            canvas = _Doc.createElement("canvas")
+            canvas.width = w
+            canvas.height = h
+            $(canvas).addClass("panel")
+            $(@).append(canvas)
+        else
+            canvas = canvas.get(0)
         ctx = canvas.getContext("2d")
         ctx.lineCap = "round"
         ctx.lineJoin = "miterLimit"
@@ -37,8 +44,6 @@ define([
         )
         ctx.closePath()
 
-        $(canvas).addClass("panel")
-        $(@).append(canvas)
         @
 
     $.fn.upCanvas = (cells, params) ->

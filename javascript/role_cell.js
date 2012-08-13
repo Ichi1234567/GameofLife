@@ -38,7 +38,7 @@
         chk = cond ? cond.test(bedead) : false;
         !chk && rule_desc[2] > 0 && (_stable = false);
       }
-      (!_stable || cells[position].ghost) && (cells[position].ghost++);
+      (!_stable || cells[position].ghost) && (cells[position].ghost++, _stable = false);
       ((!chk && !rule_desc[2]) || (rule_desc[2] > 0 && cells[position].ghost >= rule_desc[2])) && (cells[position] = new EMPTY({
         position: position
       }), _stable = false);
@@ -62,7 +62,7 @@
           _const = _Math.sin((_dying / 21) * _Math.PI);
           base_measure = 0.70 - _const;
           base_measure = _Math.max(_const, base_measure);
-          _measure_num > base_measure && (_measure_num = _Math.round(_Math.random() * (_dying - 2) + 1), this.type = "ghost", this.ghost = _measure_num);
+          _measure_num > base_measure && (_measure_num = _Math.round(_Math.random() * (_dying - 2) + 1), this.ghost = _measure_num);
         }
         this;
       }

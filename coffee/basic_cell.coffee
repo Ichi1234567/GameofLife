@@ -3,7 +3,7 @@ define([
 ], (RULE) ->
     #console.log(RULE)
     _Math = Math
-    chkbyNei = (thisCell, current, cells, c_size) ->
+    chkbyNei = (thisCell, current, cells, c_size, ctx, g_num) ->
         position = thisCell.position
         thisCell.lifecycle++
         this_row = _Math.floor(position / c_size)
@@ -33,7 +33,7 @@ define([
 
     _baseFn = (thisCell, current, cells, opts) ->
         position = thisCell.position
-        bedead = chkbyNei(thisCell, current, cells, opts.c_size)
+        bedead = chkbyNei(thisCell, current, cells, opts.c_size, opts.ctx, opts.g_num)
         ROLE = opts.ROLE
         _origin_type = thisCell.type
         _stable = true

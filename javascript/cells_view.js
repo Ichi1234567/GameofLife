@@ -218,22 +218,24 @@
         _current = this.current;
         this.saveWorker.postMessage(_cells);
         $(".plant").each(function(idx, elm) {
-          var _chk;
+          var $elm, _chk;
           _chk = idx - _current;
-          (init || _chk) && $(elm).html("").showCanvas({
+          $elm = $(elm);
+          $(elm).html("").showCanvas({
             w: _w,
             h: _h,
             num: _size,
             data: _cells
-          }).css("visibility", "visible");
-          (!_chk) && $(elm).css("visibility", "hidden");
+          });
+          $elm.css("visibility") === "visible" && $elm.css("hidden");
+          $elm.css("visibility") !== "visible" && $elm.css("visible");
           return true;
         });
         this.current = (_current + 1) % 2;
         return this;
       },
       next: function() {
-        var c_size, cell_i, cells_update, i, mode, result, _args, _cells, _chk_delay, _current, _h, _is_auto_reset, _localTime, _num, _stable, _state, _view, _w;
+        var c_size, canvas, cell_i, ctx, g_num, i, mode, result, _args, _cells, _chk_delay, _current, _h, _is_auto_reset, _localTime, _num, _stable, _state, _view, _w;
         _current = this.current;
         _cells = this.cells;
         _num = this.num;
@@ -241,54 +243,26 @@
         _stable = true;
         mode = $("#mode option:selected").val();
         _chk_delay = !!$("#chk-delay").attr("checked");
-        cells_update = function(total_cells, thisCell, state, mode, opts) {
-          var c_size, chk_row, delta, position, result, this_row, up_cells;
-          position = thisCell.position;
-          c_size = opts.c_size;
-          this_row = _Math.floor(position / c_size);
-          delta = [1, -1, -c_size, -c_size + 1, -c_size - 1, c_size, c_size + 1, c_size - 1];
-          chk_row = [0, -1, 1];
-          result = {
-            stable: true
-          };
-          up_cells = [thisCell];
-          delta.forEach(function(delta_i, idx) {
-            var cell_nei, nei_pos, row;
-            nei_pos = position + delta_i;
-            row = _Math.floor(nei_pos / c_size);
-            if (!(row - this_row - chk_row[_Math.floor((idx + 1) / 3)])) {
-              cell_nei = total_cells[nei_pos];
-              return cell_nei && !cell_nei.visited && up_cells.push(cell_nei);
-            }
-          });
-          up_cells.forEach(function(cell) {
-            var tmp;
-            position = cell.position;
-            tmp = cell.move(state, total_cells, mode, opts);
-            total_cells = tmp.cells;
-            !tmp.stable && (result.stable = false);
-            return total_cells[position].visited = true;
-          });
-          result.cells = total_cells;
-          return result;
-        };
         c_size = this.size;
+        canvas = $("canvas").eq(_current).get(0);
+        ctx = canvas.getContext("2d");
+        g_num = [this.w / c_size, this.h / c_size];
         _args = {
           EMPTY: BASIC,
           ROLE: ROLE,
           FOOD: FOOD,
           ENEMY: ENEMY,
           delay: _chk_delay,
-          c_size: c_size
+          c_size: c_size,
+          ctx: ctx,
+          g_num: g_num
         };
         i = -1;
         while (++i < _num) {
           cell_i = _cells[i];
-          if (!cell_i.visited && cell_i.type !== "empty") {
-            result = cells_update(_cells, cell_i, _state, mode, _args);
-            !result.stable && (_stable = false);
-            _cells = result.cells;
-          }
+          result = cell_i.move(_state, _cells, mode, _args);
+          !result.stable && (_stable = false);
+          _cells = result.cells;
         }
         this.cells = _cells;
         _w = this.w;
@@ -297,12 +271,12 @@
         _state = this.state;
         if (!_stable) {
           $(".plant").each(function(idx, elm) {
-            var _chk;
-            _chk = idx - _current;
-            _chk && $(elm).upCanvas(_cells, {
+            var $elm;
+            $elm = $(elm);
+            $elm.css("visibility") === "visible" && ($elm.css("visibility", "hidden"));
+            $elm.css("visibility") !== "visible" && ($elm.upCanvas(_cells, {
               num: c_size
-            }).css("visibility", "visible");
-            (!_chk) && $(elm).css("visibility", "hidden");
+            }).css("visibility", "visible"));
             return true;
           });
         }
@@ -314,7 +288,7 @@
           global_count = 0;
           prev_status = null;
         }
-        (global_count === 10) && (global_count = 0, prev_status = null, _is_auto_reset = !!$("#auto-reset").attr("checked"), _view = this, _is_auto_reset && _view.reset(), _localTime = null, !_is_auto_reset && $("#auto-run").trigger("click"));
+        (global_count === 20) && (global_count = 0, prev_status = null, _is_auto_reset = !!$("#auto-reset").attr("checked"), _view = this, _is_auto_reset && _view.reset(), _localTime = null, !_is_auto_reset && $("#auto-run").trigger("click"));
         return _stable;
       },
       set: function(cellset) {

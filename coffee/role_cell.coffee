@@ -49,7 +49,10 @@ define([
                 _stable = false
             ))
 
-        ((!_stable || (cells[position].ghost)) && (cells[position].ghost++))
+        ((!_stable || (cells[position].ghost)) && (
+            cells[position].ghost++
+            _stable = false
+        ))
 
         (((!chk && !rule_desc[2]) ||
         (rule_desc[2] > 0 && cells[position].ghost >= rule_desc[2])) && (
@@ -81,7 +84,7 @@ define([
 
                 (_measure_num > base_measure && (
                     _measure_num = _Math.round(_Math.random() * (_dying - 2) + 1)
-                    @type = "ghost"
+                    #@type = "ghost"
                     @ghost = _measure_num
                 ))
             @
