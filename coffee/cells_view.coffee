@@ -249,44 +249,6 @@ define([
             _stable = true
             mode = $("#mode option:selected").val()
             _chk_delay = !!$("#chk-delay").attr("checked")
-
-
-            cells_update = (total_cells, thisCell, state, mode, opts) ->
-                position = thisCell.position
-                c_size = opts.c_size
-                ctx = opts.ctx
-                g_num = opts.g_num
-                result = { stable: true }
-                up_cells = [thisCell]
-                base_pos = [
-                    (position % c_size) * g_num[0] + g_num[0] / 2,
-                    _Math.floor(position / c_size) * g_num[1] + g_num[1] / 2
-                ]
-                delta = [
-                    [-1, -1, (-c_size - 1)], [0, -1, -c_size], [1, -1, (-c_size + 1)],
-                    [-1, 0, -1], [1, 0, 1],
-                    [-1, 1, (c_size - 1)], [0, 1, c_size], [1, 1, (c_size + 1)]
-                ]
-                delta.forEach((delta_i, idx) ->
-                    pos_i = [
-                        base_pos[0] + delta_i[0] * g_num[0],
-                        base_pos[1] + delta_i[1] * g_num[1]
-                    ]
-                    cell_i = total_cells[position + delta_i[2]]
-                    (ctx.getImageData(pos_i[0], pos_i[1], 1 , 1).data[3] && !cell_i.visited && (
-                        up_cells.push(cell_i)
-                    ))
-                )
-
-                up_cells.forEach((cell) ->
-                    position = cell.position
-                    tmp = cell.move(state, total_cells, mode, opts)
-                    total_cells = tmp.cells
-                    (!tmp.stable && (result.stable = false))
-                    total_cells[position].visited = true
-                )
-                result.cells = total_cells
-                result
             c_size = @size
             canvas = $("canvas").eq(_current).get(0)
             ctx = canvas.getContext("2d")
@@ -305,10 +267,10 @@ define([
             i = -1
             while (++i < _num)
                 cell_i = _cells[i]
-                if (!cell_i.visited && cell_i.type != "empty")
-                    result = cells_update(_cells, cell_i, _state, mode, _args)
-                    (!result.stable && (_stable = false))
-                    _cells = result.cells
+                result = cell_i.move(_state, _cells, mode, _args)
+                (!result.stable && (_stable = false))
+                _cells = result.cells
+                
             @cells = _cells
             _w = @w
             _h = @h

@@ -235,7 +235,7 @@
         return this;
       },
       next: function() {
-        var c_size, canvas, cell_i, cells_update, ctx, g_num, i, mode, result, _args, _cells, _chk_delay, _current, _h, _is_auto_reset, _localTime, _num, _stable, _state, _view, _w;
+        var c_size, canvas, cell_i, ctx, g_num, i, mode, result, _args, _cells, _chk_delay, _current, _h, _is_auto_reset, _localTime, _num, _stable, _state, _view, _w;
         _current = this.current;
         _cells = this.cells;
         _num = this.num;
@@ -243,35 +243,6 @@
         _stable = true;
         mode = $("#mode option:selected").val();
         _chk_delay = !!$("#chk-delay").attr("checked");
-        cells_update = function(total_cells, thisCell, state, mode, opts) {
-          var base_pos, c_size, ctx, delta, g_num, position, result, up_cells;
-          position = thisCell.position;
-          c_size = opts.c_size;
-          ctx = opts.ctx;
-          g_num = opts.g_num;
-          result = {
-            stable: true
-          };
-          up_cells = [thisCell];
-          base_pos = [(position % c_size) * g_num[0] + g_num[0] / 2, _Math.floor(position / c_size) * g_num[1] + g_num[1] / 2];
-          delta = [[-1, -1, -c_size - 1], [0, -1, -c_size], [1, -1, -c_size + 1], [-1, 0, -1], [1, 0, 1], [-1, 1, c_size - 1], [0, 1, c_size], [1, 1, c_size + 1]];
-          delta.forEach(function(delta_i, idx) {
-            var cell_i, pos_i;
-            pos_i = [base_pos[0] + delta_i[0] * g_num[0], base_pos[1] + delta_i[1] * g_num[1]];
-            cell_i = total_cells[position + delta_i[2]];
-            return ctx.getImageData(pos_i[0], pos_i[1], 1, 1).data[3] && !cell_i.visited && (up_cells.push(cell_i));
-          });
-          up_cells.forEach(function(cell) {
-            var tmp;
-            position = cell.position;
-            tmp = cell.move(state, total_cells, mode, opts);
-            total_cells = tmp.cells;
-            !tmp.stable && (result.stable = false);
-            return total_cells[position].visited = true;
-          });
-          result.cells = total_cells;
-          return result;
-        };
         c_size = this.size;
         canvas = $("canvas").eq(_current).get(0);
         ctx = canvas.getContext("2d");
@@ -289,11 +260,9 @@
         i = -1;
         while (++i < _num) {
           cell_i = _cells[i];
-          if (!cell_i.visited && cell_i.type !== "empty") {
-            result = cells_update(_cells, cell_i, _state, mode, _args);
-            !result.stable && (_stable = false);
-            _cells = result.cells;
-          }
+          result = cell_i.move(_state, _cells, mode, _args);
+          !result.stable && (_stable = false);
+          _cells = result.cells;
         }
         this.cells = _cells;
         _w = this.w;
