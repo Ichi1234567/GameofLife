@@ -3,7 +3,7 @@
   define(["rule"], function(RULE) {
     var MODEL, chkbyNei, _Math, _baseFn;
     _Math = Math;
-    chkbyNei = function(thisCell, current, cells, c_size) {
+    chkbyNei = function(thisCell, current, cells, c_size, ctx, g_num) {
       var bedead, chk_row, delta, position, this_row;
       position = thisCell.position;
       thisCell.lifecycle++;
@@ -25,7 +25,7 @@
     _baseFn = function(thisCell, current, cells, opts) {
       var ROLE, bedead, chk, cond, position, rule_desc, _origin_type, _stable;
       position = thisCell.position;
-      bedead = chkbyNei(thisCell, current, cells, opts.c_size);
+      bedead = chkbyNei(thisCell, current, cells, opts.c_size, opts.ctx, opts.g_num);
       ROLE = opts.ROLE;
       _origin_type = thisCell.type;
       _stable = true;

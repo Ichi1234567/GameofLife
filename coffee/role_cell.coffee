@@ -49,7 +49,10 @@ define([
                 _stable = false
             ))
 
-        ((!_stable || (cells[position].ghost)) && (cells[position].ghost++))
+        ((!_stable || (cells[position].ghost)) && (
+            cells[position].ghost++
+            _stable = false
+        ))
 
         (((!chk && !rule_desc[2]) ||
         (rule_desc[2] > 0 && cells[position].ghost >= rule_desc[2])) && (

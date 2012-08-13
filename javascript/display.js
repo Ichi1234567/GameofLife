@@ -6,16 +6,24 @@
     _Math = Math;
     _Doc = document;
     $.fn.showCanvas = function(params) {
-      var canvas, ctx, data, g_num, h, num, w;
+      var canvas, ctx, data, g_num, h, num, w, _init;
       if (!params) return;
       w = params.w ? params.w : 400.;
       h = params.h ? params.h : 400.;
       num = params.num;
       g_num = [w / num, h / num];
       data = params.data;
-      canvas = _Doc.createElement("canvas");
-      canvas.width = w;
-      canvas.height = h;
+      _init = params.init;
+      canvas = $(this).find("canvas");
+      if (!canvas.length) {
+        canvas = _Doc.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        $(canvas).addClass("panel");
+        $(this).append(canvas);
+      } else {
+        canvas = canvas.get(0);
+      }
       ctx = canvas.getContext("2d");
       ctx.lineCap = "round";
       ctx.lineJoin = "miterLimit";
@@ -36,8 +44,6 @@
         }
       });
       ctx.closePath();
-      $(canvas).addClass("panel");
-      $(this).append(canvas);
       return this;
     };
     return $.fn.upCanvas = function(cells, params) {
