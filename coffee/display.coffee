@@ -63,6 +63,8 @@ define([
             r_i = _Math.floor(pos_i / num)
             c_i = pos_i % num
             ctx.fillStyle = "#" + COLOR[type_i][ghost]
+            #console.log(r_i + " , " + c_i + " , " + g_num[0] + " , " + g_num[1])
+            #console.log(ctx.fillStyle)
             ctx.fillRect(g_num[0] * r_i, g_num[1] * c_i, g_num[0], g_num[1])
             data_i.visited = false
         )

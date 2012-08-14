@@ -1,6 +1,6 @@
 (function() {
 
-  define(["basic_cell", "role_cell", "food_cell", "enemy_cell", "display"], function(BASIC, ROLE, FOOD, ENEMY, DISPLAY) {
+  define(["basic_cell", "role_cell", "food_cell", "enemy_cell", "display", "rule"], function(BASIC, ROLE, FOOD, ENEMY, DISPLAY, RULE) {
     var Fps, Frames, LastTime, ROUTINES, SCENE, UpdateTime, cell_model, global_count, global_timmer, prev_status, _Math;
     console.log("cells_view");
     _Math = Math;
@@ -85,7 +85,7 @@
     };
     SCENE = Backbone.View.extend({
       initialize: function(params) {
-        var _h, _num, _saveWorker, _this, _w;
+        var $plant, _h, _moveWorker, _num, _saveWorker, _size, _this, _types, _w;
         params = params ? params : {};
         this.num = params.num ? params.num : 64.;
         _num = this.num;
@@ -98,9 +98,44 @@
         _saveWorker = new Worker("javascript/saveCurrent.js");
         this.saveWorker = _saveWorker;
         _this = this;
-        _saveWorker.onmessage = function(e) {
+        _saveWorker.addEventListener("message", function(e) {
           return _this.state = e.data;
+        }, false);
+        _moveWorker = new Worker("javascript/moveWorker.js");
+        _types = {
+          empty: BASIC,
+          role: ROLE,
+          food: FOOD,
+          enemy: ENEMY
         };
+        _size = this.size;
+        $plant = $(".plant");
+        _moveWorker.addEventListener("message", function(e) {
+          var cell, cell_i, data, i, posi, stable, up_cells, _len;
+          data = e.data;
+          stable = data.stable;
+          if (typeof stable === "boolean") {
+            cell = data.cell;
+            _len = cell.length;
+            i = -1;
+            up_cells = [];
+            while (++i < _len) {
+              cell_i = cell[i];
+              up_cells.push(cell_i);
+              posi = cell_i.position;
+              _this.cells[posi].type !== cell_i.type && (_this.cells[posi] = new _types[cell_i.type]({
+                position: posi
+              }));
+              _this.cells[posi].type === cell_i.type && (_this.cells[posi].ghost = cell_i.ghost, _this.cells[posi].lifecycle = cell_i.lifecycle);
+            }
+            return !stable && $plant.each(function(idx, elm) {
+              return $(elm).upCanvas(up_cells, {
+                num: _size
+              });
+            });
+          }
+        }, false);
+        this.moveWorker = _moveWorker;
         $(".plant").eq(1).css("top", -(_h + 7));
         this.chk_opts();
         this.reset("init");
@@ -235,7 +270,7 @@
         return this;
       },
       next: function() {
-        var c_size, canvas, cell_i, ctx, g_num, i, mode, result, _args, _cells, _chk_delay, _current, _h, _is_auto_reset, _localTime, _num, _stable, _state, _view, _w;
+        var c_size, canvas, cell_i, ctx, g_num, get_nei, i, mode, _args, _cells, _chk_delay, _current, _iden, _moveWorker, _num, _stable, _state, _w_cell, _w_nei;
         _current = this.current;
         _cells = this.cells;
         _num = this.num;
@@ -247,48 +282,57 @@
         canvas = $("canvas").eq(_current).get(0);
         ctx = canvas.getContext("2d");
         g_num = [this.w / c_size, this.h / c_size];
+        get_nei = function(total_cells, thisCell, state, opts) {
+          var base_pos, delta, position, result, up_cells;
+          position = thisCell.position;
+          c_size = opts.c_size;
+          ctx = opts.ctx;
+          g_num = opts.g_num;
+          result = {
+            stable: true
+          };
+          up_cells = [];
+          base_pos = [(position % c_size) * g_num[0] + g_num[0] / 2, _Math.floor(position / c_size) * g_num[1] + g_num[1] / 2];
+          delta = [[-1, -1, -c_size - 1], [0, -1, -c_size], [1, -1, -c_size + 1], [-1, 0, -1], [1, 0, 1], [-1, 1, c_size - 1], [0, 1, c_size], [1, 1, c_size + 1]];
+          delta.forEach(function(delta_i, idx) {
+            var cell_i, pos_i;
+            pos_i = [base_pos[0] + delta_i[0] * g_num[0], base_pos[1] + delta_i[1] * g_num[1]];
+            cell_i = total_cells[position + delta_i[2]];
+            return ctx.getImageData(pos_i[0], pos_i[1], 1, 1).data[3] && !cell_i.visited && (up_cells.push(cell_i));
+          });
+          return up_cells;
+        };
         _args = {
-          EMPTY: BASIC,
-          ROLE: ROLE,
-          FOOD: FOOD,
-          ENEMY: ENEMY,
+          empty: BASIC,
+          role: ROLE,
+          food: FOOD,
+          enemy: ENEMY,
           delay: _chk_delay,
           c_size: c_size,
           ctx: ctx,
           g_num: g_num
         };
         i = -1;
+        _moveWorker = this.moveWorker;
+        _w_cell = [];
+        _w_nei = [];
+        _iden = 100;
         while (++i < _num) {
+          if (!(i % _iden)) {
+            _w_cell = [];
+            _w_nei = [];
+          }
           cell_i = _cells[i];
-          result = cell_i.move(_state, _cells, mode, _args);
-          !result.stable && (_stable = false);
-          _cells = result.cells;
-        }
-        this.cells = _cells;
-        _w = this.w;
-        _h = this.h;
-        this.saveWorker.postMessage(_cells);
-        _state = this.state;
-        if (!_stable) {
-          $(".plant").each(function(idx, elm) {
-            var $elm;
-            $elm = $(elm);
-            $elm.css("visibility") === "visible" && ($elm.css("visibility", "hidden"));
-            $elm.css("visibility") !== "visible" && ($elm.upCanvas(_cells, {
-              num: c_size
-            }).css("visibility", "visible"));
-            return true;
+          _w_cell.push(cell_i);
+          _w_nei.push(get_nei(_cells, cell_i, _state, _args));
+          !((i + 1) % _iden) && _moveWorker.postMessage({
+            id: i,
+            cell: _w_cell,
+            nei: _w_nei,
+            rule: RULE[mode],
+            delay: _chk_delay
           });
         }
-        this.current = (_current + 1) % 2;
-        _stable && !prev_status && (prev_status = _stable);
-        if (_stable && _stable === prev_status) {
-          global_count++;
-        } else {
-          global_count = 0;
-          prev_status = null;
-        }
-        (global_count === 20) && (global_count = 0, prev_status = null, _is_auto_reset = !!$("#auto-reset").attr("checked"), _view = this, _is_auto_reset && _view.reset(), _localTime = null, !_is_auto_reset && $("#auto-run").trigger("click"));
         return _stable;
       },
       set: function(cellset) {

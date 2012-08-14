@@ -26,7 +26,7 @@
       var ROLE, bedead, chk, cond, position, rule_desc, _origin_type, _stable;
       position = thisCell.position;
       bedead = chkbyNei(thisCell, current, cells, opts.c_size, opts.ctx, opts.g_num);
-      ROLE = opts.ROLE;
+      ROLE = opts.role;
       _origin_type = thisCell.type;
       _stable = true;
       rule_desc = opts.desc;

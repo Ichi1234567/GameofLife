@@ -29,7 +29,7 @@
       var EMPTY, bedead, chk, cond, position, rule_desc, _origin_type, _stable;
       position = thisCell.position;
       bedead = chkbyNei(thisCell, current, cells, opts.c_size);
-      EMPTY = opts.EMPTY;
+      EMPTY = opts.empty;
       _origin_type = thisCell.type;
       _stable = true;
       rule_desc = opts.desc;

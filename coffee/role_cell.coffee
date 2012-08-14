@@ -36,7 +36,7 @@ define([
     _baseFn = (thisCell, current, cells, opts) ->
         position = thisCell.position
         bedead = chkbyNei(thisCell, current, cells, opts.c_size)
-        EMPTY = opts.EMPTY
+        EMPTY = opts.empty
         _origin_type = thisCell.type
         _stable = true
 
@@ -55,7 +55,7 @@ define([
         ))
 
         (((!chk && !rule_desc[2]) ||
-        (rule_desc[2] > 0 && cells[position].ghost >= rule_desc[2])) && (
+          (rule_desc[2] > 0 && cells[position].ghost >= rule_desc[2])) && (
             cells[position] = new EMPTY({
                 position: position
             })
