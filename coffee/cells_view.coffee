@@ -106,6 +106,54 @@ define([
             sets
     }
 
+
+    ACTS = {
+        default: (view, data) ->
+            #console.log(arguments)
+            #console.log("default")
+            view.state = data.cells
+            view
+
+        show: (view, data) ->
+            #console.log("show")
+            #console.log(arguments)
+            stable = data.stable
+            #console.log(data.id)
+            cell = data.cell
+            _len = cell.length
+            i = -1
+            up_cells = []
+            _size = view.size
+            _types = {
+                empty: BASIC,
+                role: ROLE,
+                food: FOOD,
+                enemy: ENEMY
+            }
+            while (++i < _len)
+                cell_i = cell[i]
+                up_cells.push(cell_i)
+                posi = cell_i.position
+                #console.log(view.cells[posi].type + " , " + cell.type)
+                (view.cells[posi].type != cell_i.type && (
+                    view.cells[posi] = new _types[cell_i.type]({position: posi})
+                ))
+                (view.cells[posi].type == cell_i.type && (
+                    view.cells[posi].ghost = cell_i.ghost
+                    view.cells[posi].lifecycle = cell_i.lifecycle
+                ))
+                #console.log(stable)
+            #view.workers.postMessage({
+            #    cells: view.cells,
+            #    act: "default"
+            #})
+            #console.log(view.cells[posi])
+            #console.log(stable)
+            (!(stable) && $(".plant").each((idx, elm) ->
+                $(elm).upCanvas(up_cells, {num: _size})
+            ))
+    }
+
     SCENE = Backbone.View.extend({
         initialize: (params) ->
             params = if (params) then (params) else ({})
@@ -117,51 +165,20 @@ define([
             _w = @w
             _h = @h
             @current = 0
-            _saveWorker = new Worker("javascript/saveCurrent.js")
-            @saveWorker = _saveWorker
             _this = @
-            _saveWorker.addEventListener("message", (e) ->
-                _this.state = e.data
-            , false)
-            _moveWorker = new Worker("javascript/moveWorker.js")
-            _types = {
-                empty: BASIC,
-                role: ROLE,
-                food: FOOD,
-                enemy: ENEMY
-            }
-            _size = @size
-            $plant = $(".plant")
-            _moveWorker.addEventListener("message", (e) ->
+            for i, act_i of ACTS
+                ACTS[i] = ((view, act_i) ->
+                    (params) ->
+                        act_i(view, params)
+                )(_this, act_i)
+            _workers = new Worker("javascript/workers.js")
+            _workers.addEventListener("message", (e) ->
                 data = e.data
+                act = data.act
                 #console.log(data)
-                stable = data.stable
-                if (typeof stable == "boolean")
-                    #console.log(data.id)
-                    cell = data.cell
-                    _len = cell.length
-                    i = -1
-                    up_cells = []
-                    while (++i < _len)
-                        cell_i = cell[i]
-                        up_cells.push(cell_i)
-                        posi = cell_i.position
-                        #console.log(_this.cells[posi].type + " , " + cell.type)
-                        (_this.cells[posi].type != cell_i.type && (
-                            _this.cells[posi] = new _types[cell_i.type]({position: posi})
-                        ))
-                        (_this.cells[posi].type == cell_i.type && (
-                            _this.cells[posi].ghost = cell_i.ghost
-                            _this.cells[posi].lifecycle = cell_i.lifecycle
-                        ))
-                        #console.log(stable)
-                    #console.log(_this.cells[posi])
-                    #console.log(stable)
-                    (!(stable) && $plant.each((idx, elm) ->
-                        $(elm).upCanvas(up_cells, {num: _size})
-                    ))
+                ACTS[act](data)
             , false)
-            @moveWorker = _moveWorker
+            @workers = _workers
 
 
             $(".plant").eq(1).css("top", -(_h + 7))
@@ -265,7 +282,11 @@ define([
             _h = @h
             _size = @size
             _current = @current
-            @saveWorker.postMessage(_cells)
+            #@saveWorker.postMessage(_cells)
+            @workers.postMessage({
+                cells: _cells
+                act: "default"
+            })
             $(".plant").each((idx, elm) ->
                 _chk = idx - _current
                 $elm = $(elm)
@@ -347,7 +368,8 @@ define([
             #    rule: RULE[mode],
             #    delay: _chk_delay
             #})
-            _moveWorker = @moveWorker
+            #_moveWorker = @moveWorker
+            _workers = @workers
             _w_cell = []
             _w_nei = []
             _iden = 100
@@ -358,9 +380,11 @@ define([
                 
                 cell_i = _cells[i]
                 _w_cell.push(cell_i)
-                _w_nei.push(get_nei(_cells, cell_i, _state, _args))
+                _w_nei.push(get_nei(_cells, cell_i, _cells, _args))
                 (!((i + 1) % _iden) &&
-                    _moveWorker.postMessage({
+                    #_moveWorker.postMessage({
+                    _workers.postMessage({
+                        act: "getDelta"
                         id: i,
                         cell: _w_cell,
                         nei: _w_nei,

@@ -49,7 +49,7 @@ define([
                 _stable = false
             ))
 
-        ((!_stable || (cells[position].ghost)) && (
+        ((!_stable || (thisCell.ghost)) && (
             cells[position].ghost++
             _stable = false
         ))

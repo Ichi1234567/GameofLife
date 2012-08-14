@@ -1,7 +1,7 @@
 (function() {
 
   define(["basic_cell", "role_cell", "food_cell", "enemy_cell", "display", "rule"], function(BASIC, ROLE, FOOD, ENEMY, DISPLAY, RULE) {
-    var Fps, Frames, LastTime, ROUTINES, SCENE, UpdateTime, cell_model, global_count, global_timmer, prev_status, _Math;
+    var ACTS, Fps, Frames, LastTime, ROUTINES, SCENE, UpdateTime, cell_model, global_count, global_timmer, prev_status, _Math;
     console.log("cells_view");
     _Math = Math;
     cell_model = {
@@ -83,9 +83,44 @@
         return sets;
       }
     };
+    ACTS = {
+      "default": function(view, data) {
+        view.state = data.cells;
+        return view;
+      },
+      show: function(view, data) {
+        var cell, cell_i, i, posi, stable, up_cells, _len, _size, _types;
+        stable = data.stable;
+        cell = data.cell;
+        _len = cell.length;
+        i = -1;
+        up_cells = [];
+        _size = view.size;
+        _types = {
+          empty: BASIC,
+          role: ROLE,
+          food: FOOD,
+          enemy: ENEMY
+        };
+        while (++i < _len) {
+          cell_i = cell[i];
+          up_cells.push(cell_i);
+          posi = cell_i.position;
+          view.cells[posi].type !== cell_i.type && (view.cells[posi] = new _types[cell_i.type]({
+            position: posi
+          }));
+          view.cells[posi].type === cell_i.type && (view.cells[posi].ghost = cell_i.ghost, view.cells[posi].lifecycle = cell_i.lifecycle);
+        }
+        return !stable && $(".plant").each(function(idx, elm) {
+          return $(elm).upCanvas(up_cells, {
+            num: _size
+          });
+        });
+      }
+    };
     SCENE = Backbone.View.extend({
       initialize: function(params) {
-        var $plant, _h, _moveWorker, _num, _saveWorker, _size, _this, _types, _w;
+        var act_i, i, _h, _num, _this, _w, _workers;
         params = params ? params : {};
         this.num = params.num ? params.num : 64.;
         _num = this.num;
@@ -95,47 +130,23 @@
         _w = this.w;
         _h = this.h;
         this.current = 0;
-        _saveWorker = new Worker("javascript/saveCurrent.js");
-        this.saveWorker = _saveWorker;
         _this = this;
-        _saveWorker.addEventListener("message", function(e) {
-          return _this.state = e.data;
-        }, false);
-        _moveWorker = new Worker("javascript/moveWorker.js");
-        _types = {
-          empty: BASIC,
-          role: ROLE,
-          food: FOOD,
-          enemy: ENEMY
-        };
-        _size = this.size;
-        $plant = $(".plant");
-        _moveWorker.addEventListener("message", function(e) {
-          var cell, cell_i, data, i, posi, stable, up_cells, _len;
+        for (i in ACTS) {
+          act_i = ACTS[i];
+          ACTS[i] = (function(view, act_i) {
+            return function(params) {
+              return act_i(view, params);
+            };
+          })(_this, act_i);
+        }
+        _workers = new Worker("javascript/workers.js");
+        _workers.addEventListener("message", function(e) {
+          var act, data;
           data = e.data;
-          stable = data.stable;
-          if (typeof stable === "boolean") {
-            cell = data.cell;
-            _len = cell.length;
-            i = -1;
-            up_cells = [];
-            while (++i < _len) {
-              cell_i = cell[i];
-              up_cells.push(cell_i);
-              posi = cell_i.position;
-              _this.cells[posi].type !== cell_i.type && (_this.cells[posi] = new _types[cell_i.type]({
-                position: posi
-              }));
-              _this.cells[posi].type === cell_i.type && (_this.cells[posi].ghost = cell_i.ghost, _this.cells[posi].lifecycle = cell_i.lifecycle);
-            }
-            return !stable && $plant.each(function(idx, elm) {
-              return $(elm).upCanvas(up_cells, {
-                num: _size
-              });
-            });
-          }
+          act = data.act;
+          return ACTS[act](data);
         }, false);
-        this.moveWorker = _moveWorker;
+        this.workers = _workers;
         $(".plant").eq(1).css("top", -(_h + 7));
         this.chk_opts();
         this.reset("init");
@@ -251,7 +262,10 @@
         _h = this.h;
         _size = this.size;
         _current = this.current;
-        this.saveWorker.postMessage(_cells);
+        this.workers.postMessage({
+          cells: _cells,
+          act: "default"
+        });
         $(".plant").each(function(idx, elm) {
           var $elm, _chk;
           _chk = idx - _current;
@@ -270,7 +284,7 @@
         return this;
       },
       next: function() {
-        var c_size, canvas, cell_i, ctx, g_num, get_nei, i, mode, _args, _cells, _chk_delay, _current, _iden, _moveWorker, _num, _stable, _state, _w_cell, _w_nei;
+        var c_size, canvas, cell_i, ctx, g_num, get_nei, i, mode, _args, _cells, _chk_delay, _current, _iden, _num, _stable, _state, _w_cell, _w_nei, _workers;
         _current = this.current;
         _cells = this.cells;
         _num = this.num;
@@ -313,7 +327,7 @@
           g_num: g_num
         };
         i = -1;
-        _moveWorker = this.moveWorker;
+        _workers = this.workers;
         _w_cell = [];
         _w_nei = [];
         _iden = 100;
@@ -324,8 +338,9 @@
           }
           cell_i = _cells[i];
           _w_cell.push(cell_i);
-          _w_nei.push(get_nei(_cells, cell_i, _state, _args));
-          !((i + 1) % _iden) && _moveWorker.postMessage({
+          _w_nei.push(get_nei(_cells, cell_i, _cells, _args));
+          !((i + 1) % _iden) && _workers.postMessage({
+            act: "getDelta",
             id: i,
             cell: _w_cell,
             nei: _w_nei,
